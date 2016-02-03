@@ -1,9 +1,8 @@
 'use strict';
-var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 var yosay = require('yosay');
 
-module.exports = yeoman.generators.Base.extend({
+module.exports = require('yeoman-generator').Base.extend({
   prompting: function () {
     var done = this.async();
 
@@ -15,7 +14,13 @@ module.exports = yeoman.generators.Base.extend({
     var prompts = [{
       type: 'confirm',
       name: 'knex',
-      message: 'Would you like to use knex with postgres?',
+      message: 'Would you like to use knex and postgres?',
+      default: true
+    },
+    {
+      type: 'confirm',
+      name: 'sample',
+      message: 'Would you like some sample code?',
       default: true
     }];
 
@@ -28,29 +33,39 @@ module.exports = yeoman.generators.Base.extend({
   },
 
   writing: function () {
-    this.copy('./src/client/js/main.js', './src/client/js/main.js');
-    this.copy('./src/client/css/main.css', './src/client/css/main.css');
-    this.copy('./src/server/bin/www', './src/server/bin/www');
+    //front end
+    this.fs.copy(this.templatePath('src/public/js/main.js'), this.destinationPath('public/js/main.js'));
+    this.fs.copy(this.templatePath('src/public/css/main.css'), this.destinationPath('public/css/main.css'));
+
+    //setup
+    this.fs.copy(this.templatePath('src/bin/www'), this.destinationPath('bin/www'));
     
-    this.copy('./src/server/views/error.ejs', './src/server/views/error.ejs');
-    this.copy('./src/server/views/index.ejs', './src/server/views/index.ejs');
-    this.copy('./src/server/app.js', './src/server/app.js');
-    this.copy('package.json');
-    if (this.props.usingKnex) {
-      this.copy('./src/server/knexfile.js', './src/server/knexfile.js');
-      this.copy('./src/db/knex.js', './src/server/db/knex.js');
-      this.copy('./src/server/routes/index_with_knex.js', './src/server/routes/index.js');
+    //views
+    this.fs.copy(this.templatePath('src/views/index.ejs'), this.destinationPath('views/index.ejs'), this.props);
+    this.fs.copy(this.templatePath('src/views/error.ejs'), this.destinationPath('views/error.ejs'), this.props);
+
+    this.fs.copyTpl(this.templatePath('src/app.js'), this.destinationPath('app.js'), this.props);
+    this.fs.copy(this.templatePath('package.json'), this.destinationPath('package.json'));
+    if (this.props.knex) {
+      this.fs.copy(this.templatePath('src/knexfile.js'), this.destinationPath('knexfile.js'));
+      this.fs.copy(this.templatePath('src/db/knex.js'), this.destinationPath('db/knex.js'));
+      this.fs.copy(this.templatePath('src/routes/index_with_knex.js'), this.destinationPath('routes/index.js'));
     } else {
-      this.copy('./src/server/routes/index.js', './src/server/routes/index.js');
+      this.fs.copy(this.templatePath('src/routes/index.js'), this.destinationPath('routes/index.js'));
     }
-    this.copy('_gitignore', '.gitignore');
-    this.copy('gulpfile.js', 'gulpfile.js');
+
+    if (this.props.sample) {
+      this.fs.copy(this.templatePath('src/migrations/20160202202148_books.js'), this.destinationPath('migrations/20160202202148_books.js'));
+      this.fs.copy(this.templatePath('src/migrations/20160202202021_authors.js'), this.destinationPath('migrations/20160202202021_authors.js'));
+      this.fs.copy(this.templatePath('src/api/books.js'), this.destinationPath('api/books.js'));
+      this.fs.copy(this.templatePath('src/api/authors.js'), this.destinationPath('api/authors.js'));
+    }
+
+    this.fs.copy(this.templatePath('_gitignore'), this.destinationPath('.gitignore'));
+    this.fs.copy(this.templatePath('gulpfile.js'), this.destinationPath('gulpfile.js'));
   },
 
   install: function () {
     this.installDependencies();
-    if (this.props.usingKnex) {
-      this.npmInstall(['knex', 'pg'], {'save': true});
-    }
   }
 });
