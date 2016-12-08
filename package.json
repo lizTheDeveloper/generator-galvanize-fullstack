@@ -1,7 +1,7 @@
 {
   "name": "generator-galvanize-fullstack",
-  "version": "0.0.0",
-  "description": "A generator that creates a SEAN app- PG/Knex, Express, Angular, Node",
+  "version": "0.1.0",
+  "description": "A generator that creates a SEN app- PG/Knex, Express, Node",
   "homepage": "",
   "author": {
     "name": "Liz Howard",
